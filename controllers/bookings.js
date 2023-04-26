@@ -1,24 +1,43 @@
 const Booking = require("../models/Booking");
 const Hotel = require("../models/Hotel");
+const User = require("../models/User");
+const { sendMail } = require("./mails");
 
 //@desc     Get all bookings
 //@route    GET /api/v1/bookings
 //@access   Public
 exports.getBookings = async (req, res, next) => {
   let query;
+  let hotelId = req.params.hotelId;
   if (req.user.role !== "admin") {
-    query = Booking.find({
-      user: req.user.id,
-      hotel: req.params.hotelId,
-    }).populate({
-      path: "hotel",
-      select: "name address tel",
-    });
+    if (hotelId) {
+      query = Booking.find({
+        user: req.user.id,
+        hotel: hotelId,
+      }).populate({
+        path: "hotel",
+        select: "name address tel",
+      });
+    } else {
+      query = Booking.find({
+        user: req.user.id,
+      }).populate({
+        path: "hotel",
+        select: "name address tel",
+      });
+    }
   } else {
-    query = Booking.find().populate({
-      path: "hotel",
-      select: "name address tel",
-    });
+    if (hotelId) {
+      query = Booking.find({ hotel: hotelId }).populate({
+        path: "hotel",
+        select: "name address tel",
+      });
+    } else {
+      query = Booking.find().populate({
+        path: "hotel",
+        select: "name address tel",
+      });
+    }
   }
   try {
     const bookings = await query;
@@ -85,6 +104,13 @@ exports.addBooking = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: booking,
+    });
+    User.findById(req.user.id, function (err, user) {
+      if (err) {
+        console.log(err);
+      } else {
+        sendMail(user, booking);
+      }
     });
   } catch (error) {
     console.log(error);
