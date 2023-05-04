@@ -10,6 +10,7 @@ exports.sendMail = async (user, booking) => {
     secure: true, // upgrades later with STARTTLS -- change this based on the PORT
   });
   const bookingDate = new Date(booking.bookingDate);
+  const checkoutDate = new Date(booking.checkoutDate);
   const mailData = {
     from: "thanaphum.tw@gmail.com",
     to: user.email,
@@ -19,9 +20,8 @@ exports.sendMail = async (user, booking) => {
  Thank you for choosing our Hotel service. We are pleased to confirm your booking for the following details:
      Booking ID: ${booking._id.toString()}
      Service: Hotel
-     Booking Date: ${bookingDate.getDate()}-${
-      bookingDate.getMonth() + 1
-    }-${bookingDate.getFullYear()}
+     Booking Date: ${bookingDate.toLocaleDateString()}
+     Checkout Date: ${checkoutDate.toLocaleDateString()}
    
  We kindly ask that you review the details above to ensure that everything is accurate. If you notice any discrepancies, please do not hesitate to contact us at thanaphum.tw@gmail.com.
 

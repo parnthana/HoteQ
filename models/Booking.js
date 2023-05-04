@@ -5,6 +5,10 @@ const BookingSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  checkoutDate: {
+    type: Date,
+    required: true,
+  },
   user: {
     type: mongoose.Schema.ObjectId,
     ref: "User",

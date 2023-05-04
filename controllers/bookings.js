@@ -79,7 +79,7 @@ exports.getBooking = async (req, res, next) => {
 };
 
 //@desc     Add booking
-//@route    POST /api/v1/hotels/:hotelId/booking
+//@route    POST /api/v1/hotels/:hotelId/bookings
 //@access   Private
 exports.addBooking = async (req, res, next) => {
   try {
@@ -92,26 +92,39 @@ exports.addBooking = async (req, res, next) => {
       });
     }
     req.body.user = req.user.id;
-    const existedBooking = await Booking.find({ user: req.user.id });
-    // If the user is not an admin, they can only create 3 booking.
-    if (existedBooking.length >= 3 && req.user.role !== "admin") {
+
+    // only allow the registered user to book up to 3 nights
+    const bookingDate = new Date(req.body.bookingDate);
+    const checkoutDate = new Date(req.body.checkoutDate);
+    if (bookingDate >= checkoutDate) {
       return res.status(400).json({
         success: false,
-        message: `The user with ID ${req.user.id} has already made 3 bookings`,
+        message: `The checkout date should be after booking date.`,
+      });
+    } else if (
+      bookingDate.getFullYear() === checkoutDate.getFullYear() &&
+      bookingDate.getMonth() === checkoutDate.getMonth() &&
+      checkoutDate.getDate() - bookingDate.getDate() <= 3
+    ) {
+      const booking = await Booking.create(req.body);
+      res.status(200).json({
+        success: true,
+        data: booking,
+      });
+
+      User.findById(req.user.id, function (err, user) {
+        if (err) {
+          console.log(err);
+        } else {
+          sendMail(user, booking);
+        }
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: `You can only book up to 3 nights.`,
       });
     }
-    const booking = await Booking.create(req.body);
-    res.status(200).json({
-      success: true,
-      data: booking,
-    });
-    User.findById(req.user.id, function (err, user) {
-      if (err) {
-        console.log(err);
-      } else {
-        sendMail(user, booking);
-      }
-    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
