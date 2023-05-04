@@ -1,6 +1,7 @@
 const Booking = require("../models/Booking");
 const Hotel = require("../models/Hotel");
 const User = require("../models/User");
+const { validateBookingAndCheckoutDate } = require("../utils/date");
 const { sendMail } = require("./mails");
 
 //@desc     Get all bookings
@@ -96,16 +97,21 @@ exports.addBooking = async (req, res, next) => {
     // only allow the registered user to book up to 3 nights
     const bookingDate = new Date(req.body.bookingDate);
     const checkoutDate = new Date(req.body.checkoutDate);
-    if (bookingDate >= checkoutDate) {
+    const isValidDate = validateBookingAndCheckoutDate(
+      bookingDate,
+      checkoutDate
+    );
+    if (!isValidDate.bookBeforeCheckout) {
       return res.status(400).json({
         success: false,
-        message: `The checkout date should be after booking date.`,
+        message: `The checkout date should be after the booking date.`,
       });
-    } else if (
-      bookingDate.getFullYear() === checkoutDate.getFullYear() &&
-      bookingDate.getMonth() === checkoutDate.getMonth() &&
-      checkoutDate.getDate() - bookingDate.getDate() <= 3
-    ) {
+    } else if (!isValidDate.notMoreThanThreeNights) {
+      return res.status(400).json({
+        success: false,
+        message: `Sorry, You can only book up to 3 nights.`,
+      });
+    } else {
       const booking = await Booking.create(req.body);
       res.status(200).json({
         success: true,
@@ -118,11 +124,6 @@ exports.addBooking = async (req, res, next) => {
         } else {
           sendMail(user, booking);
         }
-      });
-    } else {
-      return res.status(400).json({
-        success: false,
-        message: `You can only book up to 3 nights.`,
       });
     }
   } catch (error) {
@@ -151,6 +152,59 @@ exports.updateBooking = async (req, res, next) => {
         success: false,
         message: `User ${req.user.id} is not authorized to update this booking`,
       });
+    }
+
+    // check the booking period not exceed 3 nights
+    if (req.body.bookingDate) {
+      const bookingDate = new Date(req.body.bookingDate);
+      if (req.body.checkoutDate) {
+        const checkoutDate = new Date(req.body.checkoutDate);
+        const isValidDate = validateBookingAndCheckoutDate(
+          bookingDate,
+          checkoutDate
+        );
+        if (!isValidDate.bookBeforeCheckout) {
+          return res.status(400).json({
+            success: false,
+            message: `The checkout date should be after the booking date.`,
+          });
+        } else if (!isValidDate.notMoreThanThreeNights) {
+          return res.status(400).json({
+            success: false,
+            message: `Sorry, You can only book up to 3 nights.`,
+          });
+        }
+      } else {
+        const isValidDate = validateBookingAndCheckoutDate(
+          bookingDate,
+          booking.checkoutDate
+        );
+        if (!isValidDate.bookBeforeCheckout) {
+          return res.status(400).json({
+            success: false,
+            message: `Cannot change booking date to be after or same ascheckout date.`,
+          });
+        } else if (!isValidDate.notMoreThanThreeNights) {
+          return res.status(400).json({
+            success: false,
+            message: `Sorry, You can only book up to 3 nights.`,
+          });
+        }
+      }
+    } else if (req.body.checkoutDate) {
+      const checkoutDate = new Date(req.body.checkoutDate);
+      const isValidDate = validateBookingAndCheckoutDate(booking.bookingDate, checkoutDate);
+      if (!isValidDate.bookBeforeCheckout) {
+        return res.status(400).json({
+          success: false,
+          message: `Cannot change checkout date to be before or same as booking date.`,
+        });
+      } else if (!isValidDate.notMoreThanThreeNights) {
+        return res.status(400).json({
+          success: false,
+          message: `Sorry, You can only book up to 3 nights.`,
+        });
+      }
     }
     booking = await Booking.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
