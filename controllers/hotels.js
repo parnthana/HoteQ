@@ -12,7 +12,7 @@ exports.getHotels = async (req, res, next) => {
     (match) => `$${match}`
   );
   // Finding resource
-  let query = Hotel.find(JSON.parse(queryStr)).populate("bookings");
+  let query = Hotel.find(JSON.parse(queryStr));
   // Select
   if (req.query.select) {
     query = query.select(req.query.select.split(",").join(" "));
