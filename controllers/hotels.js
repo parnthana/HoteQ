@@ -70,8 +70,12 @@ exports.getHotel = async (req, res, next) => {
 //@access   Private
 exports.createHotel = async (req, res, next) => {
   console.log(req.body);
-  const hotel = await Hotel.create(req.body);
-  res.status(201).json({ success: true, data: hotel });
+  try {
+    const hotel = await Hotel.create(req.body);
+    res.status(201).json({ success: true, data: hotel });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err });
+  }
 };
 
 //@desc     Update single hotel
