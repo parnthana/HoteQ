@@ -16,13 +16,13 @@ exports.sendMail = async (user, booking) => {
     to: user.email,
     subject: `Your Booking Confirmation - ${booking._id.toString()}`,
     text: `Dear ${user.name},
-         
+
  Thank you for choosing our Hotel service. We are pleased to confirm your booking for the following details:
      Booking ID: ${booking._id.toString()}
      Service: Hotel
-     Booking Date: ${bookingDate.toLocaleDateString()}
-     Checkout Date: ${checkoutDate.toLocaleDateString()}
-   
+     Booking Date: ${bookingDate.toLocaleDateString('en-GB')}
+     Checkout Date: ${checkoutDate.toLocaleDateString('en-GB')}
+
  We kindly ask that you review the details above to ensure that everything is accurate. If you notice any discrepancies, please do not hesitate to contact us at thanaphum.tw@gmail.com.
 
  Sincerely,
