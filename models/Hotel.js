@@ -39,7 +39,7 @@ const HotelSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
-// Cascade delete appointments when a hospital is deleted
+// Cascade delete bookings when a hotel is deleted
 HotelSchema.pre("remove", async function (next) {
   console.log(`Booking being removed from hotel ${this._id}`);
   await this.model("Booking").deleteMany({ hotel: this._id });
