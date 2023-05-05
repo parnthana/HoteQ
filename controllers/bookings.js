@@ -6,7 +6,7 @@ const { sendMail } = require("./mails");
 
 //@desc     Get all bookings
 //@route    GET /api/v1/bookings
-//@access   Public
+//@access   Private
 exports.getBookings = async (req, res, next) => {
   let query;
   let hotelId = req.params.hotelId;
@@ -57,7 +57,7 @@ exports.getBookings = async (req, res, next) => {
 
 //@desc     Get single booking
 //@route    GET /api/v1/booking/:id
-//@access   Public
+//@access   Private
 exports.getBooking = async (req, res, next) => {
   try {
     const booking = await Booking.findById(req.params.id).populate({

@@ -67,7 +67,7 @@ exports.getHotel = async (req, res, next) => {
 
 //@desc     Create single hotel
 //@route    POST /api/v1/hotels
-//@access   Public
+//@access   Private
 exports.createHotel = async (req, res, next) => {
   console.log(req.body);
   const hotel = await Hotel.create(req.body);
@@ -76,7 +76,7 @@ exports.createHotel = async (req, res, next) => {
 
 //@desc     Update single hotel
 //@route    PUT /api/v1/hotels/:id
-//@access   Public
+//@access   Private
 exports.updateHotel = async (req, res, next) => {
   try {
     const hotel = await Hotel.findByIdAndUpdate(req.params.id, req.body, {
@@ -94,7 +94,7 @@ exports.updateHotel = async (req, res, next) => {
 
 //@desc     Delete single hotel
 //@route    DELETE /api/v1/hotels/:id
-//@access   Public
+//@access   Private
 exports.deleteHotel = async (req, res, next) => {
   try {
     const hotel = await Hotel.findById(req.params.id);
